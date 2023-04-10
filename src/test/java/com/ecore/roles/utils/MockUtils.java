@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -31,6 +32,19 @@ public class MockUtils {
         }
     }
 
+    public static void mockGetUsers(MockRestServiceServer mockServer, List<User> users) {
+        try {
+            mockServer.expect(requestTo("http://test.com/users"))
+                    .andExpect(method(HttpMethod.GET))
+                    .andRespond(
+                            withStatus(HttpStatus.OK)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .body(new ObjectMapper().writeValueAsString(users)));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void mockGetTeamById(MockRestServiceServer mockServer, UUID teamId, Team team) {
         try {
             mockServer.expect(ExpectedCount.manyTimes(), requestTo("http://test.com/teams/" + teamId))
@@ -39,6 +53,19 @@ public class MockUtils {
                             withStatus(HttpStatus.OK)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .body(new ObjectMapper().writeValueAsString(team)));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void mockGetTeams(MockRestServiceServer mockServer, List<Team> teams) {
+        try {
+            mockServer.expect(ExpectedCount.manyTimes(), requestTo("http://test.com/teams"))
+                    .andExpect(method(HttpMethod.GET))
+                    .andRespond(
+                            withStatus(HttpStatus.OK)
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .body(new ObjectMapper().writeValueAsString(teams)));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

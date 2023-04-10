@@ -7,4 +7,8 @@ public class InvalidArgumentException extends RuntimeException {
     public <T> InvalidArgumentException(Class<T> resource) {
         super(format("Invalid '%s' object", resource.getSimpleName()));
     }
+
+    public <T> InvalidArgumentException(Class<T> resource, String additionalMessage) {
+        super(format("Invalid '%s' object. %s", resource.getSimpleName(), additionalMessage));
+    }
 }
