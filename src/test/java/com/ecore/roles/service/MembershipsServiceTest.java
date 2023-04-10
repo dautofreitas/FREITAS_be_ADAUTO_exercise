@@ -2,6 +2,7 @@ package com.ecore.roles.service;
 
 import com.ecore.roles.exception.InvalidArgumentException;
 import com.ecore.roles.exception.ResourceExistsException;
+import com.ecore.roles.exception.ResourceNotFoundException;
 import com.ecore.roles.model.Membership;
 import com.ecore.roles.repository.MembershipRepository;
 import com.ecore.roles.repository.RoleRepository;
@@ -14,8 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static com.ecore.roles.utils.TestData.DEFAULT_MEMBERSHIP;
-import static com.ecore.roles.utils.TestData.DEVELOPER_ROLE;
+import static com.ecore.roles.utils.TestData.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -49,6 +49,9 @@ class MembershipsServiceTest {
         when(membershipRepository
                 .save(expectedMembership))
                         .thenReturn(expectedMembership);
+        when(teamsService
+                .getTeam(expectedMembership.getTeamId()))
+                        .thenReturn(ORDINARY_CORAL_LYNX_TEAM());
 
         Membership actualMembership = membershipsService.assignRoleToMembership(expectedMembership);
 
@@ -100,4 +103,37 @@ class MembershipsServiceTest {
                 () -> membershipsService.getMemberships(null));
     }
 
+    @Test
+    public void shouldReturnMembershipByUserIdAndTeamId() {
+        Membership expectedMembership = DEFAULT_MEMBERSHIP();
+
+        when(membershipRepository.findByUserIdAndTeamId(expectedMembership.getUserId(),
+                expectedMembership.getTeamId()))
+                        .thenReturn(Optional.of(expectedMembership));
+
+        Membership actualMembership = membershipsService.findByUserIdAndTeamId(expectedMembership.getUserId(),
+                expectedMembership.getTeamId());
+
+        assertNotNull(actualMembership);
+        assertEquals(actualMembership, expectedMembership);
+
+    }
+
+    @Test
+    public void shouldFailWhenGetMembershipByUserIdAndTeamId() {
+        Membership expectedMembership = DEFAULT_MEMBERSHIP();
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> membershipsService
+                        .findByUserIdAndTeamId(expectedMembership.getUserId(),
+                                expectedMembership.getTeamId()));
+
+        assertEquals(String.format("Membership not found"), exception.getMessage());
+    }
+
+    @Test
+    public void shouldFailWhenGetMembershipByUserIdAndTeamIdNull() {
+        assertThrows(NullPointerException.class,
+                () -> membershipsService.findByUserIdAndTeamId(null, null));
+    }
 }
